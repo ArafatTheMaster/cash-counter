@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cash Counter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box}
+
+body{
+    margin:0;
+    padding:20px;
+    background:#eef3f7;
+    font-family:Inter,system-ui,Arial;
+}
+.container{max-width:520px;margin:auto}
+h2{text-align:center;font-weight:800;margin-bottom:12px}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+th,td{
+    padding:12px;
+    border-bottom:1px solid #e6e6e6;
+    text-align:center;
+}
+th{background:#2c3e50;color:#fff}
+
+.qty-cell{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+}
+input.qty{
+    width:80px;
+    padding:9px;
+    font-size:18px;
+    font-weight:700;
+    text-align:center;
+    color:#c0392b;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+input:disabled{background:#eee;color:#999}
+.reset-icon{font-size:20px;cursor:pointer}
+.amount{font-weight:700;color:#1f618d}
+
+.total-row td{
+    background:#f4f6f7;
+    font-size:18px;
+    font-weight:800;
+}
+.total-value{
+    font-size:22px;
+    font-weight:900;
+    color:#2c3e50;
+}
+
+/* Buttons */
+.controls{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+}
+button{
+    flex:1;
+    padding:12px;
+    font-size:16px;
+    font-weight:700;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+.reset-btn{background:#c0392b;color:#fff}
+
+/* Manual input */
+.manual-box{
+    margin-top:14px;
+    background:#fff;
+    padding:14px;
+    border-radius:12px;
+    box-shadow:0 6px 15px rgba(0,0,0,.1);
+}
+.manual-box input{
+    width:100%;
+    padding:12px;
+    font-size:20px;
+    font-weight:800;
+    text-align:right;
+    border:2px solid #2c3e50;
+    border-radius:10px;
+}
+
+/* Words */
+.words{
+    margin-top:10px;
+    background:#fff;
+    padding:14px;
+    border-radius:12px;
+    box-shadow:0 6px 15px rgba(0,0,0,.1);
+    font-size:16px;
+    font-family:"Hind Siliguri",sans-serif;
+}
+.value-bold{font-weight:700}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>Cash Counter</h2>
+
+<table>
+<tr><th>Note</th><th>Quantity</th><th>Amount</th></tr>
+
+<script>
+const notes=[1000,500,200,100,50,20,10,5];
+notes.forEach(n=>{
+document.write(`
+<tr>
+<td>${n}</td>
+<td class="qty-cell">
+    <input type="number" class="qty" id="q${n}" value="0"
+    onfocus="activateCashMode(this)"
+    oninput="calculate()">
+    <span class="reset-icon" onclick="clearRow(${n})">🔄</span>
+</td>
+<td class="amount" id="a${n}">0</td>
+</tr>
+`);
+});
+</script>
+
+<tr class="total-row">
+<td colspan="2">Total Amount</td>
+<td class="total-value" id="total">0</td>
+</tr>
+</table>
+
+<div class="controls">
+    <button class="reset-btn" onclick="resetAll()">🔄 Reset</button>
+</div>
+
+<div class="manual-box">
+    <input id="manualInput" type="text" placeholder="Enter number"
+           onfocus="activateManualMode(this)"
+           oninput="handleManualInput(this)">
+</div>
+
+<div class="words" id="bnWords">
+কথায়: <span class="value-bold">শূন্য টাকা মাত্র</span>
+</div>
+
+<div class="words" id="enWords" style="font-family:Inter">
+In words: <span class="value-bold">Zero Only</span>
+</div>
+
+</div>
+
+<script>
+let activeMode="cash";
+
+function formatMoney(n){return n.toLocaleString("en-US");}
+
+/* -------- Mode Control -------- */
+function activateCashMode(el){
+    activeMode="cash";
+    document.getElementById("manualInput").disabled=true;
+    document.getElementById("manualInput").value="";
+    if(el.value==0)el.value="";
+}
+
+function activateManualMode(el){
+    activeMode="manual";
+    notes.forEach(n=>document.getElementById("q"+n).disabled=true);
+    el.value="";
+    updateWords(0);
+}
+
+/* -------- Cash Counter -------- */
+function clearRow(n){
+    if(activeMode!=="cash")return;
+    document.getElementById("q"+n).value=0;
+    document.getElementById("a"+n).innerText="0";
+    calculate();
+}
+
+function calculate(){
+    if(activeMode!=="cash")return;
+
+    let sum=0;
+    notes.forEach(n=>{
+        let q=Number(document.getElementById("q"+n).value||0);
+        let a=q*n;
+        document.getElementById("a"+n).innerText=formatMoney(a);
+        sum+=a;
+    });
+    document.getElementById("total").innerText=formatMoney(sum);
+    updateWords(sum);
+}
+
+/* -------- Manual Input -------- */
+function handleManualInput(el){
+    if(activeMode!=="manual")return;
+
+    let raw=el.value.replace(/,/g,'').replace(/\D/g,'');
+    if(raw===""){updateWords(0);return;}
+    let num=Number(raw);
+    el.value=formatMoney(num);
+    updateWords(num);
+}
+
+/* -------- Reset -------- */
+function resetAll(){
+    activeMode="cash";
+    notes.forEach(n=>{
+        let q=document.getElementById("q"+n);
+        q.disabled=false;
+        q.value=0;
+        document.getElementById("a"+n).innerText="0";
+    });
+    document.getElementById("manualInput").disabled=false;
+    document.getElementById("manualInput").value="";
+    document.getElementById("total").innerText="0";
+    updateWords(0);
+}
+
+/* -------- Words -------- */
+function updateWords(sum){
+    document.getElementById("bnWords").innerHTML=
+        `কথায়: <span class="value-bold">${toBn(sum)} টাকা মাত্র</span>`;
+    document.getElementById("enWords").innerHTML=
+        `In words: <span class="value-bold">${toEn(sum)} Only</span>`;
+}
+
+/* English */
+function toEn(num){
+    if(num===0)return"Zero";
+    const a=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
+    "Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+    const b=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+    function c(n){
+        if(n<20)return a[n];
+        if(n<100)return b[Math.floor(n/10)]+" "+a[n%10];
+        if(n<1000)return a[Math.floor(n/100)]+" Hundred"+(n%100?" "+c(n%100):"");
+        if(n<100000)return c(Math.floor(n/1000))+" Thousand"+(n%1000?" "+c(n%1000):"");
+        if(n<10000000)return c(Math.floor(n/100000))+" Lakh"+(n%100000?" "+c(n%100000):"");
+        return c(Math.floor(n/10000000))+" Crore"+(n%10000000?" "+c(n%10000000):"");
+    }
+    return c(num).trim();
+}
+
+/* Bengali (same as before) */
+const bnMap={1:"এক",2:"দুই",3:"তিন",4:"চার",5:"পাঁচ",6:"ছয়",7:"সাত",8:"আট",9:"নয়",10:"দশ",11:"এগারো",12:"বারো",13:"তেরো",14:"চৌদ্দ",15:"পনেরো",16:"ষোলো",17:"সতেরো",18:"আঠারো",19:"ঊনিশ",20:"বিশ",
+21:"একুশ",22:"বাইশ",23:"তেইশ",24:"চব্বিশ",25:"পঁচিশ",26:"ছাব্বিশ",27:"সাতাশ",28:"আটাশ",29:"ঊনত্রিশ",30:"ত্রিশ",
+31:"একত্রিশ",32:"বত্রিশ",33:"তেত্রিশ",34:"চৌত্রিশ",35:"পঁয়ত্রিশ",36:"ছত্রিশ",37:"সাঁইত্রিশ",38:"আটত্রিশ",39:"ঊনচল্লিশ",40:"চল্লিশ",
+41:"একচল্লিশ",42:"বিয়াল্লিশ",43:"তেতাল্লিশ",44:"চুয়াল্লিশ",45:"পঁয়তাল্লিশ",46:"ছেচল্লিশ",47:"সাতচল্লিশ",48:"আটচল্লিশ",49:"ঊনপঞ্চাশ",50:"পঞ্চাশ",
+51:"একান্ন",52:"বাহান্ন",53:"তিপ্পান্ন",54:"চুয়ান্ন",55:"পঞ্চান্ন",56:"ছাপান্ন",57:"সাতান্ন",58:"আটান্ন",59:"ঊনষাট",60:"ষাট",
+61:"একষট্টি",62:"বাষট্টি",63:"তেষট্টি",64:"চৌষট্টি",65:"পঁয়ষট্টি",66:"ছেষট্টি",67:"সাতষট্টি",68:"আটষট্টি",69:"ঊনসত্তর",70:"সত্তর",
+71:"একাত্তর",72:"বাহাত্তর",73:"তিয়াত্তর",74:"চুয়াত্তর",75:"পঁচাত্তর",76:"ছিয়াত্তর",77:"সাতাত্তর",78:"আটাত্তর",79:"ঊনআশি",80:"আশি",
+81:"একাশি",82:"বিরাশি",83:"তিরাশি",84:"চুরাশি",85:"পঁচাশি",86:"ছিয়াশি",87:"সাতাশি",88:"আটাশি",89:"ঊননব্বই",90:"নব্বই",
+91:"একানব্বই",92:"বিরানব্বই",93:"তিরানব্বই",94:"চুরানব্বই",95:"পঁচানব্বই",96:"ছিয়ানব্বই",97:"সাতানব্বই",98:"আটানব্বই",99:"নিরানব্বই",100:"একশত"};
+
+function toBn(num){
+    if(num===0)return"শূন্য";
+    if(num<=100)return bnMap[num];
+    if(num<1000){
+        let r=num%100;
+        return bnMap[Math.floor(num/100)]+" শত"+(r?" "+toBn(r):"");
+    }
+    if(num<100000){
+        let r=num%1000;
+        return toBn(Math.floor(num/1000))+" হাজার"+(r?" "+toBn(r):"");
+    }
+    if(num<10000000){
+        let r=num%100000;
+        return toBn(Math.floor(num/100000))+" লাখ"+(r?" "+toBn(r):"");
+    }
+    let r=num%10000000;
+    return toBn(Math.floor(num/10000000))+" কোটি"+(r?" "+toBn(r):"");
+}
+</script>
+
+</body>
+</html>
