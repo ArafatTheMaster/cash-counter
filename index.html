@@ -8,118 +8,135 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-*,*::before,*::after{box-sizing:border-box}
-
-body{
-    margin:0;
-    padding:20px;
+*{box-sizing:border-box}
+html,body{
+    margin:0;height:100%;
     background:#eef3f7;
     font-family:Inter,system-ui,Arial;
 }
-.container{max-width:520px;margin:auto}
-h2{text-align:center;font-weight:800;margin-bottom:12px}
+.app{
+    height:100%;
+    max-width:520px;
+    margin:auto;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+}
+h2{
+    text-align:center;
+    font-size:20px;
+    font-weight:800;
+    margin:4px 0 8px;
+}
 
+/* Table */
 table{
     width:100%;
     border-collapse:collapse;
     background:#fff;
-    border-radius:14px;
+    border-radius:12px;
     overflow:hidden;
-    box-shadow:0 10px 25px rgba(0,0,0,.12);
+    box-shadow:0 6px 14px rgba(0,0,0,.12);
+    font-size:14px;
 }
 th,td{
-    padding:12px;
-    border-bottom:1px solid #e6e6e6;
+    padding:6px;
+    border-bottom:1px solid #eee;
     text-align:center;
 }
-th{background:#2c3e50;color:#fff}
-
+th{
+    background:#2c3e50;
+    color:#fff;
+    font-size:13px;
+}
 .qty-cell{
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:6px;
+    gap:4px;
 }
-input.qty{
-    width:80px;
-    padding:9px;
-    font-size:18px;
-    font-weight:700;
-    text-align:center;
-    color:#c0392b;
-    border:1px solid #ccc;
-    border-radius:8px;
-}
-input:disabled{background:#eee;color:#999}
-.reset-icon{font-size:20px;cursor:pointer}
-.amount{font-weight:700;color:#1f618d}
-
-.total-row td{
-    background:#f4f6f7;
-    font-size:18px;
-    font-weight:800;
-}
-.total-value{
-    font-size:22px;
-    font-weight:900;
-    color:#2c3e50;
-}
-
-/* Buttons */
-.controls{
-    display:flex;
-    gap:10px;
-    margin-top:8px;
-}
-button{
-    flex:1;
-    padding:12px;
+.qty{
+    width:58px;
+    padding:6px;
     font-size:16px;
     font-weight:700;
+    text-align:center;
+    border:1px solid #ccc;
+    border-radius:6px;
+    color:#c0392b;
+}
+.qty:disabled{background:#eee;color:#aaa}
+.reset-icon{
+    font-size:18px;
+    padding:6px;
+    cursor:pointer;
+}
+.amount{
+    font-weight:700;
+    color:#1f618d;
+}
+
+/* Total */
+.total-row td{
+    background:#f4f6f7;
+    font-weight:800;
+}
+.total{
+    font-size:18px;
+}
+
+/* Controls */
+.controls{margin:6px 0}
+button{
+    width:100%;
+    padding:10px;
     border:none;
     border-radius:10px;
+    font-size:15px;
+    font-weight:700;
     cursor:pointer;
 }
 .reset-btn{background:#c0392b;color:#fff}
 
-/* Manual input */
-.manual-box{
-    margin-top:14px;
+/* Manual */
+.manual{
     background:#fff;
-    padding:14px;
+    padding:10px;
     border-radius:12px;
-    box-shadow:0 6px 15px rgba(0,0,0,.1);
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
 }
-.manual-box input{
+.manual input{
     width:100%;
-    padding:12px;
+    padding:10px;
     font-size:20px;
     font-weight:800;
     text-align:right;
     border:2px solid #2c3e50;
     border-radius:10px;
 }
+.manual input:disabled{background:#eee}
 
 /* Words */
 .words{
-    margin-top:10px;
+    margin-top:6px;
     background:#fff;
-    padding:14px;
-    border-radius:12px;
-    box-shadow:0 6px 15px rgba(0,0,0,.1);
-    font-size:16px;
+    padding:8px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+    font-size:14px;
     font-family:"Hind Siliguri",sans-serif;
 }
-.value-bold{font-weight:700}
+.bold{font-weight:700}
 </style>
 </head>
 
 <body>
-<div class="container">
+<div class="app">
 
+<h2>Cash Counter</h2>
 
 <table>
-<tr><th>Note</th><th>Quantity</th><th>Amount</th></tr>
+<tr><th>Note</th><th>Qty</th><th>Amount</th></tr>
 
 <script>
 const notes=[1000,500,200,100,50,20,10,5];
@@ -128,120 +145,116 @@ document.write(`
 <tr>
 <td>${n}</td>
 <td class="qty-cell">
-    <input type="number" class="qty" id="q${n}" value="0"
-    onfocus="activateCashMode(this)"
-    oninput="calculate()">
-    <span class="reset-icon" onclick="clearRow(${n})">🔄</span>
+<input class="qty" id="q${n}" type="number" value="0"
+onfocus="cashMode(this)"
+oninput="calc()">
+<span class="reset-icon" onclick="clearRow(${n})">🔄</span>
 </td>
-<td class="amount" id="a${n}">0</td>
+<td class="amount" id="a${n}">0/-</td>
 </tr>
 `);
 });
 </script>
 
 <tr class="total-row">
-<td colspan="2">Total Amount</td>
-<td class="total-value" id="total">0</td>
+<td colspan="2">Total</td>
+<td class="total" id="total">0/-</td>
 </tr>
 </table>
 
 <div class="controls">
-    <button class="reset-btn" onclick="resetAll()">🔄 Reset</button>
+<button class="reset-btn" onclick="resetAll()">🔄 Reset</button>
 </div>
 
-<div class="manual-box">
-    <input id="manualInput" type="text" placeholder="Enter number"
-           onfocus="activateManualMode(this)"
-           oninput="handleManualInput(this)">
+<div class="manual">
+<input id="manual" placeholder="Enter amount"
+onfocus="manualMode(this)"
+oninput="manualInput(this)">
 </div>
 
-<div class="words" id="bnWords">
-কথায়: <span class="value-bold">শূন্য টাকা মাত্র</span>
-</div>
-
-<div class="words" id="enWords" style="font-family:Inter">
-In words: <span class="value-bold">Zero Only</span>
+<div class="words" id="bn">কথায়: <span class="bold">শূন্য টাকা মাত্র</span></div>
+<div class="words" id="en" style="font-family:Inter">
+In words: <span class="bold">Zero Only</span>
 </div>
 
 </div>
 
 <script>
-let activeMode="cash";
+let mode=null;
 
-function formatMoney(n){return n.toLocaleString("en-US");}
-
-/* -------- Mode Control -------- */
-function activateCashMode(el){
-    activeMode="cash";
-    document.getElementById("manualInput").disabled=true;
-    document.getElementById("manualInput").value="";
-    if(el.value==0)el.value="";
+/* Indian format + /- */
+function formatINR(n){
+    return n.toLocaleString("en-IN") + "/-";
 }
 
-function activateManualMode(el){
-    activeMode="manual";
+/* ---------- Mode ---------- */
+function cashMode(el){
+    mode="cash";
+    document.getElementById("manual").disabled=true;
+    if(el.value==0)el.value="";
+}
+function manualMode(el){
+    mode="manual";
     notes.forEach(n=>document.getElementById("q"+n).disabled=true);
     el.value="";
     updateWords(0);
 }
 
-/* -------- Cash Counter -------- */
+/* ---------- Cash ---------- */
 function clearRow(n){
-    if(activeMode!=="cash")return;
+    if(mode!=="cash")return;
     document.getElementById("q"+n).value=0;
-    document.getElementById("a"+n).innerText="0";
-    calculate();
+    document.getElementById("a"+n).innerText="0/-";
+    calc();
 }
-
-function calculate(){
-    if(activeMode!=="cash")return;
-
+function calc(){
+    if(mode!=="cash")return;
     let sum=0;
     notes.forEach(n=>{
-        let q=Number(document.getElementById("q"+n).value||0);
+        let q=+document.getElementById("q"+n).value||0;
         let a=q*n;
-        document.getElementById("a"+n).innerText=formatMoney(a);
+        document.getElementById("a"+n).innerText=formatINR(a);
         sum+=a;
     });
-    document.getElementById("total").innerText=formatMoney(sum);
+    document.getElementById("total").innerText=formatINR(sum);
     updateWords(sum);
 }
 
-/* -------- Manual Input -------- */
-function handleManualInput(el){
-    if(activeMode!=="manual")return;
-
+/* ---------- Manual ---------- */
+function manualInput(el){
+    if(mode!=="manual")return;
     let raw=el.value.replace(/,/g,'').replace(/\D/g,'');
-    if(raw===""){updateWords(0);return;}
-    let num=Number(raw);
-    el.value=formatMoney(num);
+    if(!raw){updateWords(0);return;}
+    let num=+raw;
+    el.value=num.toLocaleString("en-IN");
     updateWords(num);
 }
 
-/* -------- Reset -------- */
+/* ---------- Reset ---------- */
 function resetAll(){
-    activeMode="cash";
+    mode=null;
     notes.forEach(n=>{
         let q=document.getElementById("q"+n);
         q.disabled=false;
         q.value=0;
-        document.getElementById("a"+n).innerText="0";
+        document.getElementById("a"+n).innerText="0/-";
     });
-    document.getElementById("manualInput").disabled=false;
-    document.getElementById("manualInput").value="";
-    document.getElementById("total").innerText="0";
+    let m=document.getElementById("manual");
+    m.disabled=false;
+    m.value="";
+    document.getElementById("total").innerText="0/-";
     updateWords(0);
 }
 
-/* -------- Words -------- */
-function updateWords(sum){
-    document.getElementById("bnWords").innerHTML=
-        `কথায়: <span class="value-bold">${toBn(sum)} টাকা মাত্র</span>`;
-    document.getElementById("enWords").innerHTML=
-        `In words: <span class="value-bold">${toEn(sum)} Only</span>`;
+/* ---------- Words ---------- */
+function updateWords(n){
+    document.getElementById("bn").innerHTML=
+        `কথায়: <span class="bold">${toBn(n)} টাকা মাত্র</span>`;
+    document.getElementById("en").innerHTML=
+        `In words: <span class="bold">${toEn(n)} Only</span>`;
 }
 
-/* English */
+/* English words */
 function toEn(num){
     if(num===0)return"Zero";
     const a=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
@@ -258,8 +271,9 @@ function toEn(num){
     return c(num).trim();
 }
 
-/* Bengali (same as before) */
-const bnMap={1:"এক",2:"দুই",3:"তিন",4:"চার",5:"পাঁচ",6:"ছয়",7:"সাত",8:"আট",9:"নয়",10:"দশ",11:"এগারো",12:"বারো",13:"তেরো",14:"চৌদ্দ",15:"পনেরো",16:"ষোলো",17:"সতেরো",18:"আঠারো",19:"ঊনিশ",20:"বিশ",
+/* Bengali words (exact mapping used earlier) */
+const bnMap={1:"এক",2:"দুই",3:"তিন",4:"চার",5:"পাঁচ",6:"ছয়",7:"সাত",8:"আট",9:"নয়",10:"দশ",
+11:"এগারো",12:"বারো",13:"তেরো",14:"চৌদ্দ",15:"পনেরো",16:"ষোলো",17:"সতেরো",18:"আঠারো",19:"ঊনিশ",20:"বিশ",
 21:"একুশ",22:"বাইশ",23:"তেইশ",24:"চব্বিশ",25:"পঁচিশ",26:"ছাব্বিশ",27:"সাতাশ",28:"আটাশ",29:"ঊনত্রিশ",30:"ত্রিশ",
 31:"একত্রিশ",32:"বত্রিশ",33:"তেত্রিশ",34:"চৌত্রিশ",35:"পঁয়ত্রিশ",36:"ছত্রিশ",37:"সাঁইত্রিশ",38:"আটত্রিশ",39:"ঊনচল্লিশ",40:"চল্লিশ",
 41:"একচল্লিশ",42:"বিয়াল্লিশ",43:"তেতাল্লিশ",44:"চুয়াল্লিশ",45:"পঁয়তাল্লিশ",46:"ছেচল্লিশ",47:"সাতচল্লিশ",48:"আটচল্লিশ",49:"ঊনপঞ্চাশ",50:"পঞ্চাশ",
@@ -291,4 +305,3 @@ function toBn(num){
 
 </body>
 </html>
-
